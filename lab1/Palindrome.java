@@ -18,9 +18,9 @@ public class Palindrome {
         for (int i = 0; i < args.length; i++) {
             String s = args[i];
             if (isPalindrome(s)) {
-                System.out.print("It is a palindrome.");
+                System.out.println("It is a palindrome.");
             } else {
-                System.out.print("It is not a palindrome.");
+                System.out.println("It is not a palindrome.");
             }
         }
     }

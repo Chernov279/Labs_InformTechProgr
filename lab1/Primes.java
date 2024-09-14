@@ -11,7 +11,7 @@ public class Primes {
     }
 
     public static void main(String[] args){
-        for(int num = 3; num < 100; num ++) {
+        for(int num = 2; num < 100; num ++) {
             if (isPrime(num)) {
                 System.out.print(num + " ");
             }

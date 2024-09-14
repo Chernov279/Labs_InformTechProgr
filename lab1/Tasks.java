@@ -58,10 +58,18 @@ public class Tasks {
     }
 
     public static int ticketSaler(int amount, double price){
-        return (int) (price * 72 / 100  * amount);
+        double comission = 0.72;
+        return (int) (price * comission  * amount);
     }
 
     public static int tables(int students, int desk){
-        return Math.max(0, students - (desk * 2));
+        return Math.max(0, students / 2 - desk + (students % 2));
+    }
+
+    public static void main(String[] args){
+        //test functions
+        System.out.println(factorial(3)  );
+        System.out.println(factorial(5)  );
+        System.out.println(factorial(7)  );
     }
 }
