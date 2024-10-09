@@ -16,7 +16,8 @@ class Sword extends Weapon {
     public void attack() {
         if (getStrength() > 0){
         setStrength(getStrength() - 1);
-        System.out.println(getName() + " is slashing with " + this.getDamage() * getBladeLength() + " damage and strength is " + getStrength() + "!");
+        System.out.println(getName() + " is slashing with " + this.getDamage() * getBladeLength()
+                + " damage and strength is " + getStrength() + "!");
     }else{
         System.out.println(getName() + " with " + this.getDamage() * getBladeLength() + " is broken!");
         }
