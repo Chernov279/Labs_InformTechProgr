@@ -1,5 +1,3 @@
-package lab1;
-
 public class Tasks {
     public static double convert(int gallon) {
         return 3.785 * gallon;

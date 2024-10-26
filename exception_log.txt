@@ -1,0 +1,8 @@
+Исключение: lab4.CustomNumberFormatException - Невозможно преобразовать строку в число: 123a
+Исключение: lab4.exceptions.CustomNumberFormatException - Невозможно преобразовать строку в число: 123a
+Исключение: lab4.exceptions.CustomNumberFormatException - Невозможно преобразовать строку в число: 123a
+Исключение: lab4.exceptions.CustomDivisionException - деление на 0
+Исключение: lab4.exceptions.CustomAgeException - неподходящий возраст
+Исключение: lab4.exceptions.CustomFileNotFoundException - Файл file.txt не найден.
+Исключение: lab4.exceptions.CustomEmptyStackException - Ошибка: стек пуст.
+Исключение: lab4.exceptions.CustomInputMismatchException - Некорректный ввод: ожидалось число.

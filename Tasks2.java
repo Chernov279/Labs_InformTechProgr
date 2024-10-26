@@ -1,5 +1,3 @@
-package lab2;
-
 import java.util.Arrays;
 
 public class Tasks2 {
