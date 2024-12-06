@@ -2,6 +2,7 @@ package lab7;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ThreadLoaders {
     public static class Product {
@@ -31,20 +32,19 @@ public class ThreadLoaders {
             return null;
         }
     }
+
     public static class Mover implements Runnable {
         private static int currentWeight = 0; // Общий вес товаров, которые переносятся
-        private static int totalDeliveredWeight = 0; // Общий доставленный вес на втором складе
-        private static final int MAX_SECOND_WAREHOUSE_WEIGHT = 150; // Лимит веса на втором складе
         private static final int MAX_WEIGHT_LOADERS = 150; // Лимит общего веса товаров, который может переноситься
-
-        private final Warehouse firstWarehouse;
+        private static int allWeight = 0; // Общий вес товаров, которые переносятся
+        private final Warehouse warehouse;
         private final CountDownLatch latch;
+        private final AtomicBoolean workDone;
 
-        private int localWeight = 0;// Вес товаров, которые переносит конкретный грузчик
-
-        public Mover(Warehouse warehouse, CountDownLatch latch) {
-            this.firstWarehouse = warehouse;
+        public Mover(Warehouse warehouse, CountDownLatch latch, AtomicBoolean workDone) {
+            this.warehouse = warehouse;
             this.latch = latch;
+            this.workDone = workDone;
         }
 
         @Override
@@ -55,11 +55,20 @@ public class ThreadLoaders {
                 while (true) {
                     Product product;
 
-                    synchronized (firstWarehouse) {
-                        product = firstWarehouse.getNextProduct();
+                    synchronized (warehouse) {
+                        product = warehouse.getNextProduct();
                     }
 
                     if (product == null) {
+                        synchronized (workDone) {
+                            if (!workDone.get()) {
+                                workDone.set(true);
+                                System.out.println(Thread.currentThread().getName() + " доставлен груз на склад с весом: "
+                                        + currentWeight + " кг.");
+                                allWeight += currentWeight;
+                                System.out.println("Все грузчики завершили работу. Всего на втором складе: " + allWeight + " кг.");
+                            }
+                        }
                         break;
                     }
 
@@ -68,32 +77,18 @@ public class ThreadLoaders {
                         continue;
                     }
 
-                    synchronized (this) {
-                        while (currentWeight + product.getWeight() > MAX_WEIGHT_LOADERS) {
-                            System.out.println(Thread.currentThread().getName() + " пока ожидает.");
-                            wait();
-                        }
-
-                        currentWeight += product.getWeight();
-                        localWeight += product.getWeight();
-                        System.out.println(Thread.currentThread().getName() + " добавил товар весом: " + product.getWeight()
-                                + " кг. Текущий вес у всех грузчиков: " + currentWeight + " кг. Текущий вес этого грузчика: " + localWeight);
-
-                        // Задержка для имитации времени переноса товара
-                        Thread.sleep(2000);
-                        System.out.println(Thread.currentThread().getName() + " доставил груз на склад с весом: "
-                                + localWeight + " кг.");
-
-                        synchronized (Mover.class) {
-                            totalDeliveredWeight += localWeight;
-                            currentWeight -= localWeight;
-                            notifyAll();
-                            if (totalDeliveredWeight >= MAX_SECOND_WAREHOUSE_WEIGHT) {
-                                System.out.println("На втором складе достигнут общий вес: " + totalDeliveredWeight + " кг. Работа завершена.");
-                                System.exit(0);
-                            }
-                        localWeight = 0;
-
+                    synchronized (Mover.class) {
+                        if (currentWeight + product.getWeight() <= MAX_WEIGHT_LOADERS) {
+                            currentWeight += product.getWeight();
+                            System.out.println(Thread.currentThread().getName() + " добавил товар весом: " + product.getWeight()
+                                    + " кг. Текущий вес у всех грузчиков: " + currentWeight + " кг.");
+                        } else {
+                            System.out.println(Thread.currentThread().getName() + " доставлен груз на склад с весом: "
+                                    + currentWeight + " кг.");
+                            allWeight += currentWeight;
+                            currentWeight = product.getWeight();
+                            System.out.println(Thread.currentThread().getName() + " добавил товар весом: " + product.getWeight()
+                                    + " кг. Текущий вес у всех грузчиков: " + currentWeight + " кг.");
                         }
                     }
                 }
@@ -109,32 +104,33 @@ public class ThreadLoaders {
                 new Product(10),
                 new Product(20),
                 new Product(30),
-                new Product(30),
-                new Product(50),
-                new Product(30),
-                new Product(20),
                 new Product(40),
-                new Product(30),
-                new Product(80)
+                new Product(50),
+                new Product(60),
+                new Product(70),
+                new Product(80),
+                new Product(90),
+                new Product(100)
 
         );
 
         Warehouse warehouse = new Warehouse(products);
         int numMovers = 3; // Количество грузчиков
         CountDownLatch latch = new CountDownLatch(numMovers);
+        AtomicBoolean getDone = new AtomicBoolean(false);
 
         ExecutorService executor = Executors.newFixedThreadPool(numMovers);
 
         for (int i = 0; i < numMovers; i++) {
             executor.submit(() -> {
                 latch.countDown();
-                new Mover(warehouse, latch).run();
+                new Mover(warehouse, latch, getDone).run();
             });
         }
 
         executor.shutdown();
         executor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 
-        System.out.println("Все грузчики завершили работу.");
+
     }
 }
